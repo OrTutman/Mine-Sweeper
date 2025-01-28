@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mine Sweeper</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body onload="">
+
+    <h1>Mine Sweeper</h1>
+
+    <h2> <span> </span></h2>
+
+    <h3>Completed!</h3>
+
+    <table>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div id ="board"></div>
+
+    <p class="timer"></p>
+
+    <button id="newGameButton">New Game</button>
+
+    <div class="difficulty">
+    
+        <h3>Difficulty</h3>
+        <button class="btn-diff" data-size="${gLevel1}" onclick="onDifficultyClick(this)">Beginner</button>
+        <button class="btn-diff" data-size="${gLevel2}" onclick="onDifficultyClick(this)">Medium</button>
+        <button class="btn-diff" data-size="${gLevel3}" onclick="onDifficultyClick(this)">Expert</button>
+
+    </div>
+    <script src="js/main.js"></script>
+</body>
+
+</html>
