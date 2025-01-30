@@ -78,14 +78,14 @@ table {
     padding: 10px 20px;
     font-size: 18px;
     cursor: pointer;
-    background-color: #9daf4c;
+    background-color: #4caf7d;
     color: white;
     border: none;
     border-radius: 5px;
   }
   
   #newGameButton:hover {
-    background-color: #b99a0c;
+    background-color: #47c458;
   }
 
 

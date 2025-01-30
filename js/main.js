@@ -11,6 +11,8 @@ var gInterval
 var gStartTime
 
 function onInitGame() {
+    resetTimer()
+    
 }
 
 
@@ -24,12 +26,14 @@ for (let i = 0; i < 16; i++) {
   cell.addEventListener('click', () => handleCellClick(i))
   board.appendChild(cell)
   cells.push(cell)
+  startTimer()
 }
 
 let currentPlayer = '❤️'
 
 // on click on cell
 function handleCellClick(index) {
+   
   if (!cells[index].textContent) {
     cells[index].textContent = currentPlayer
     currentPlayer = currentPlayer === '❤️' ? '😍' :'😍'
