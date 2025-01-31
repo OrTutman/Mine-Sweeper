@@ -1,78 +1,88 @@
-#board {
-    display: grid;
-    grid-template-columns: repeat(4, 100px); 
-    grid-template-rows: repeat(4, 100px);   
-    gap: 5px;                              
-    margin: 20px auto;
-    width: 430px;
-  }
-  
-  .cell {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #f0f0f0; 
-    font-size: 24px;
-    cursor: pointer;
-    border: 1px solid #ccc; 
-  }
-  
-  .cell:hover {
-    background-color: #e0e0e0; 
-  }
-  
 
 body {
-    text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 250vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+  flex-direction: column
 }
 
+/* Ensure the board is a block-level container */
+.board {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column; /* Center the table in the container */
+  width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 20px auto; /* Centers the table in the container */
+}
 
 td {
-    border: solid;
-    background-color: rgba(171, 197, 179, 0.596);
-    height: 50px;
-    width: 50px;
-    border-radius: 10px;
-    font-size: 20px;
-    cursor: pointer;
+  width: 40px;   /* Increase cell size */
+  height: 40px;  /* Increase cell size */
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 30px;  /* Adjust text size */
+  background-color: #e0e0e0;  /* Light grey background */
 }
 
+td:hover {
+  background-color: #d0d0d0;  /* Slightly darker background on hover */
+}
+
+.grid-item {
+  font-size: 24px;
+  background-color: #f5f5f5;
+}
+
+.game-table {
+  margin: 20px auto;
+}
+/*  */
+
+
+.grid-item:hover {
+  background-color: #ddd; 
+} 
+
+.timer{
+  font-family: fantasy;
+}
 
 .correct-cell {
     background-color: rgb(190, 184, 251);
 }
 
-
-table {
-    margin: auto;
-    background-color: rgb(34, 247, 190);
-    border-radius: 10px;
-    padding: 10px;
-    border: solid;
-    border-color: rgb(172, 143, 226);
-}
-
-
 .difficulty {
-    width: 400px;
+    width: 300px;
     margin: auto;
     background-color: rgb(34, 247, 190);
     border-radius: 20px;
-    margin-top: 30px;
+    margin-top: 20px;
     border: solid; 
     border-color: rgb(172, 143, 226);
 }
 
 
-.new-game {
+/* .new-game {
     background-color: rgb(119, 103, 109);
     font-size: 15px;
     border-radius: 16px;
     padding: 16px;
     cursor: pointer;
-}
+} */
 
-#newGameButton {
+.newGameButton {
     display: block;
     margin: 20px auto;
     padding: 10px 20px;
@@ -84,7 +94,7 @@ table {
     border-radius: 5px;
   }
   
-  #newGameButton:hover {
+  .newGameButton:hover {
     background-color: #47c458;
   }
 
@@ -97,7 +107,3 @@ table {
     cursor: pointer;
 }
 
-
-h3 {
-    display: none;
-}
