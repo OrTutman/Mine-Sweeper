@@ -62,27 +62,6 @@ td:hover {
   font-family: fantasy;
 }
 
-/* Assigning different colors to each number */
-/* .blue-number {
-  color: blue;
-}
-
-.green-number {
-  color: green;
-}
-
-.red-number {
-  color: red;
-}
-
-.darkblue-number {
-  color: darkblue;
-}
-
-.darkred-number {
-  color: darkred;
-} */
-
 .grid-item:hover {
   background-color: #ddd; 
 } 
@@ -105,14 +84,6 @@ td:hover {
     border-color: rgb(172, 143, 226);
 }
 
-
-/* .new-game {
-    background-color: rgb(119, 103, 109);
-    font-size: 15px;
-    border-radius: 16px;
-    padding: 16px;
-    cursor: pointer;
-} */
 
 .newGameButton {
     display: block;
@@ -139,3 +110,35 @@ td:hover {
     cursor: pointer;
 }
 
+.game-over-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 9999; 
+}
+
+.game-over-message h2 {
+  font-size: 2em;
+}
+
+.game-over-message p {
+  font-size: 1.2em;
+}
+
+.game-over-message button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.game-over-message button:hover {
+  background-color: #45a049;
+}

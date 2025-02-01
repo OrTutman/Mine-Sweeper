@@ -31,8 +31,17 @@ var gStartTime
 
 function onInitGame() {
  
-startTimer()
-renderBoard()
+  if (gGame.isOn) {
+    return  // Don't start the timer if the game is already in progress
+  }
+
+  gBoard = createBoard()  // Create the board at the start
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
+  placeMines() // Place the mines
+  setMinesNegsCount() // Set the mine counts for all cells
+
+  startTimer() // Start the timer
+  renderBoard() // Render the board after everything is set
 
 
 }
@@ -47,10 +56,10 @@ function createBoard() {
 
   for (let i = 0; i < size * size; i++) {
     board.push({
-      isMine: false,
-      minesAroundCount: 0,
-      isCovered: true,  // Initially covered
-      isMarked: false,
+      isCovered: true,  // All cells are initially covered
+      isMine: false,    // Default to not a mine
+      minesAroundCount: 0, // Default to 0 mines around
+      isMarked: false,   // Not marked initially
     })
   }
 
@@ -63,36 +72,6 @@ function placeMines() {
     gBoard[index].isMine = true
   })
 }
-
-
-// // Rendering the board
-// function renderBoard() {
-//   const board = document.querySelector('.board')
-//   board.innerHTML = '' // Clear any existing board
-
-//   const table = document.createElement('table')
-//   table.classList.add('game-table')
-
-//   // Loop through rows and columns to create the grid
-//   for (let row = 0; row < gLevel.size; row++) {
-//     const tr = document.createElement('tr')
-    
-//     for (let col = 0; col < gLevel.size; col++) {
-//       const td = document.createElement('td')
-//       td.classList.add('grid-item');
-//       td.textContent = '' // Empty initially
-
-//       const index = row * gLevel.size + col; // Calculate index based on row/column
-
-//       // Add event listener for clicks
-//       td.addEventListener('click', () => handleClick(index, td))
-//       tr.appendChild(td)
-//     }
-//     table.appendChild(tr)
-//   }
-  
-//   board.appendChild(table)
-// }
 
 
 // Set the number of mines surrounding each cell
@@ -134,97 +113,43 @@ function setMinesNegsCount() {
 }
 
 
-// // Handle cell click
-// function handleClick(index, cell) {
-//   if (firstClick) {
-//     firstClick = false
-//     mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
-//     gBoard = createBoard()
-//     placeMines()// Place mines on the board
-//     setMinesNegsCount() // Set the mine counts for all cells
-//   }
-
-//   const clickedCell = gBoard[index]
-
-//   // If it's a mine, display the bomb
-//   if (clickedCell.isMine) {
-//     console.log('Mine hit!')
-//     cell.textContent = '💣'  // Display a bomb if it's a mine
-//   } else {
-//     console.log('Safe click')
-//     const mineCount = clickedCell.minesAroundCount
-
-//     if (mineCount > 0) {
-//       // Display the number of mines around the cell
-//       cell.textContent = mineCount
-
-//             // Apply different colors based on the mine count
-//             if (mineCount === 1) {
-//               cell.style.color = 'blue'  // Blue for 1
-//             } else if (mineCount === 2) {
-//               cell.style.color = 'green'  // Green for 2
-//             } else if (mineCount === 3) {
-//               cell.style.color = 'red'  // Red for 3
-//             } else if (mineCount === 4) {
-//               cell.style.color = 'darkblue'  // Dark blue for 4
-//             } else {
-//               cell.style.color = '' // Default color for other numbers (e.g., 5, 6, etc.)
-//             }
-
-//     } else {
-//       // If no mines are around, leave the cell empty
-//       cell.textContent = 0
-//     }
-//   }
-
-//   // Mark the cell as revealed
-//   clickedCell.isCovered = false
-// }
-
-// Handle cell click with class-based color
 function handleClick(index, elCell) {
-  
+  if (gGame.gameOver) return // Don't process clicks if the game is over
+
+  const clickedCell = gBoard[index] // Get the clicked cell object
+
+  // If this is the first click, initialize the game
   if (firstClick) {
     firstClick = false
     mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
     gBoard = createBoard()
-    placeMines() // Place mines on the board
+    placeMines()// Place mines on the board
     setMinesNegsCount() // Set the mine counts for all cells
   }
 
-  const clickedCell = gBoard[index]
-
-  // If it's a mine, display the bomb
+  // If it's a mine, display the bomb and decrease lives
   if (clickedCell.isMine) {
     console.log('Mine hit!')
     elCell.textContent = '💣'  // Display a bomb if it's a mine
+
+    gGame.lives -= 1 // Decrease the player's lives
+    updateLivesDisplay() // Update the lives display on the page
+
+    if (gGame.lives === 0) {
+      gameOver(); // Trigger game over if no lives left
+    }
   } else {
     console.log('Safe click')
     const mineCount = clickedCell.minesAroundCount
 
     if (mineCount > 0) {
-      // Display the number of mines around the cell
-      elCell.textContent = mineCount
-      setNumberColor(elCell, mineCount)
-      
-      // Apply CSS classes based on the number
-     // elCell.classList.remove('blue-number', 'green-number', 'red-number', 'darkblue-number') // Remove any previous color classes
-      
-      // if (mineCount === 1) {
-      //   elCell.classList.add('blue-number')
-      // } else if (mineCount === 2) {
-      //   elCell.classList.add('green-number')
-      // } else if (mineCount === 3) {
-      //   elCell.classList.add('red-number')
-      // } else if (mineCount === 4) {
-      //   elCell.classList.add('darkblue-number')
-      // } else if (mineCount === 5) {
-      //   elCell.classList.add('darkred-number')
-      // }
+      elCell.textContent = mineCount;  // Show the number of surrounding mines
+      setNumberColor(elCell, mineCount)  // Set the color of the number
     } else {
       // If no mines are around, uncover the cell and expand uncovering to neighbors
-      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size)  }
-}
+      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size)
+    }
+  }
 
   // Mark the cell as revealed
   clickedCell.isCovered = false
@@ -235,21 +160,21 @@ function setNumberColor(elCell, number) {
   switch (number) {
     case 1:
       elCell.style.color = 'blue'
-      break;
+      break
     case 2:
       elCell.style.color = 'green'
-      break;
+      break
     case 3:
       elCell.style.color = 'red'
-      break;
+      break
     case 4:
       elCell.style.color = 'darkblue'
-      break;
+      break
     case 5:
       elCell.style.color = 'darkred'
     default:
       elCell.style.color = 'black' // For 0 or any other case
-      break;
+      break
   }
 }
 
@@ -312,7 +237,7 @@ function uncoverNeighbors(board, i, j) {
 // Function to render the board
 function renderBoard() {
   const board = document.querySelector('.board')
-  board.innerHTML = ''; // Clear any existing board
+  board.innerHTML = '' // Clear any existing board
 
   const table = document.createElement('table')
   table.classList.add('game-table')
@@ -323,20 +248,19 @@ function renderBoard() {
     
     for (let col = 0; col < gLevel.size; col++) {
       const elCell = document.createElement('td') // Create the cell (elCell)
-      elCell.classList.add('grid-item'); // Add the CSS class for styling
-      elCell.setAttribute('data-index', row * gLevel.size + col) // Set the index attribute
+      elCell.classList.add('grid-item') // Add the CSS class for styling
+      const index = row * gLevel.size + col // Calculate the correct index
 
-      // Initially set the cell's background color to the covered state (if necessary)
-      //elCell.style.backgroundColor = 'gray'; // All cells are initially covered
+      elCell.setAttribute('data-index', index) // Set the index attribute
 
       // Add event listener for left-click (click) to reveal the cell
-      elCell.addEventListener('click', () => handleClick(row * gLevel.size + col, elCell))
+      elCell.addEventListener('click', () => handleClick(index, elCell))
 
       // Add event listener for right-click (contextmenu) to mark the cell
       elCell.addEventListener('contextmenu', (event) => {
-        event.preventDefault(); // Prevent the default right-click menu
-        onCellMarked(elCell, row * gLevel.size + col) // Mark or unmark the cell
-      })
+        event.preventDefault() // Prevent the default right-click menu
+        onCellMarked(elCell, index) // Mark or unmark the cell
+      });
 
       // Append the cell to the row
       tr.appendChild(elCell)
@@ -349,43 +273,6 @@ function renderBoard() {
   // Append the table to the board
   board.appendChild(table)
 }
-
-// // Rendering the board
-// function renderBoard() {
-//   const board = document.querySelector('.board')
-//   board.innerHTML = '' // Clear any existing board
-
-//   const table = document.createElement('table')
-//   table.classList.add('game-table')
-
-//   // Loop through rows and columns to create the grid
-//   for (let row = 0; row < gLevel.size; row++) {
-//     const tr = document.createElement('tr')
-    
-//     for (let col = 0; col < gLevel.size; col++) {
-//       const td = document.createElement('td')
-//       td.classList.add('grid-item')
-//       td.textContent = '' // Empty initially
-
-//       const index = row * gLevel.size + col // Calculate index based on row/column
-
-//       // Left-click (standard click)
-//       td.addEventListener('click', () => handleClick(index, td))
-
-//       // Right-click (context menu - flag the cell)
-//       td.addEventListener('contextmenu', (event) => {
-//         event.preventDefault() // Prevent the default context menu from showing
-//         onCellMarked(td, index) // Mark or unmark the cell
-//       });
-
-//       tr.appendChild(td)
-//     }
-//     table.appendChild(tr)
-//   }
-  
-//   board.appendChild(table)
-// }
-
 
 // Get random unique indexes for mines
 function getRandomIndexes(count, max) {
@@ -408,16 +295,99 @@ function updateLivesDisplay() {
 
 // Game Over function
 function gameOver() {
-  gGame.gameOver = true // Mark the game as over
-  alert('Game Over! You lost all your lives.'); // Show a game over message
-  
-  // Optionally, disable further clicks on the board
-  const cells = document.querySelectorAll('.grid-item')
-  cells.forEach(cell => cell.removeEventListener('click', handleClick))
-  cells.forEach(cell => cell.removeEventListener('contextmenu', (event) => event.preventDefault()))
 
-  // Stop the timer if needed
-  clearInterval(gInterval)
+      gGame.gameOver = true
+      
+      // Log to check if the interval is cleared
+      console.log("Stopping the timer...")
+      if (gInterval) {
+        clearInterval(gInterval)
+        gInterval = null  // Reset the interval
+        console.log("Timer stopped!")
+      }
+
+       // Stop the timer and update the display
+
+      uncoverAllCells() // Uncover all cells
+      showGameOverMessage()  // Show game over message
+      disableCellClicks() // Disable further clicks
+      stopTimer() 
+    
+    
+}
+
+function showGameOverMessage() {
+  console.log("Displaying Game Over Message")  // Debugging line
+
+  const gameOverMessage = document.createElement('div')
+  gameOverMessage.classList.add('game-over-message')
+  gameOverMessage.innerHTML = `
+    <h2>Game Over!</h2>
+    <p>You have lost all your lives.</p>
+    <p><strong>Time: ${Math.floor((Date.now() - gStartTime) / 1000)}s</strong></p>
+    <button onclick="restartGame()">Restart</button>
+  `
+
+  document.body.appendChild(gameOverMessage)  // Append the message
+}
+
+
+function restartGame() {
+  // Reset game state and board for a new game
+  gGame = {
+    isOn: false,
+    coveredCount: 0,
+    markedCount: 0,
+    secsPassed: 0,
+  };
+  
+  firstClick = true
+  mineIndexes = []
+  gBoard = createBoard()
+  
+  renderBoard()  // Re-render the board
+  startTimer()  // Restart the timer
+  
+  // Remove the game over message from the screen
+  const gameOverMessage = document.querySelector('.game-over-message')
+  if (gameOverMessage) {
+    gameOverMessage.remove()
+  }
+}
+
+
+// Uncover all the cells when the game is over
+function uncoverAllCells() {
+  const cells = document.querySelectorAll('.grid-item')
+  
+  cells.forEach((cell, index) => {
+    const clickedCell = gBoard[index]
+
+    // If the cell is covered, uncover it
+    if (clickedCell.isCovered) {
+      clickedCell.isCovered = false
+
+      if (clickedCell.isMine) {
+        cell.textContent = '💣'  // Show a bomb if it's a mine
+      } else {
+        const mineCount = clickedCell.minesAroundCount
+        if (mineCount > 0) {
+          cell.textContent = mineCount  // Show the number of surrounding mines
+          setNumberColor(cell, mineCount)  // Set the number's color
+        }
+      }
+      cell.classList.add('uncovered')  // Optional: Add a class for styling
+    }
+  })
+}
+
+// Disable all cell clicks (to prevent interaction after game over)
+function disableCellClicks() {
+  const cells = document.querySelectorAll('.grid-item')
+  cells.forEach(cell => {
+    cell.removeEventListener('click', handleClick)
+    cell.removeEventListener('contextmenu', (event) => event.preventDefault())
+  })
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -434,14 +404,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to start a new game
 function startNewGame() {
   // Reset the game state
-  gGame.lives = 3;
-  gGame.gameOver = false;
-  gGame.secsPassed = 0;
-  updateLivesDisplay(); // Update the lives display
+  gGame.lives = 3
+  gGame.gameOver = false
+  gGame.secsPassed = 0
+  updateLivesDisplay() // Update the lives display
   
   // Reset the board and mines
-  renderBoard();
-  startTimer();
+  renderBoard()
+  startTimer()
 }
 
 function resetTimer() {
@@ -468,20 +438,40 @@ function onDifficultyClick(elBtn) {
 }
 
 
-function startTimer() {
-    gStartTime = Date.now()
-    gInterval = setInterval(updateTime, 1)
-}
-
 
 function updateTime() {
-    var currTime = Date.now()
-    var elapsedTime = currTime - gStartTime
+  const currentTime = Date.now()
+  const elapsedTime = currentTime - gStartTime
 
+  const seconds = Math.floor(elapsedTime / 1000)  // Convert to seconds
 
-    var sec = Math.floor(elapsedTime / 1000 % 60)
-
-    var elTime = document.querySelector('.timer')
-    elTime.innerHTML = `${sec}`
+  const elTimer = document.querySelector('.timer')
+  if (elTimer) {
+    elTimer.textContent = `Time: ${seconds}s`  // Update timer display
+  }
 }
 
+function startTimer() {
+  console.log("Starting timer...")
+
+  if (gInterval) {
+    console.log("Timer is already running, skipping start.")
+    return  // Skip starting the timer if it’s already running
+  }
+
+  gStartTime = Date.now()
+  gInterval = setInterval(updateTime, 1000) // Start the timer
+  console.log("Timer started")
+}
+
+function stopTimer() {
+  console.log("Stopping timer...")
+  
+  if (gInterval) {
+    clearInterval(gInterval)  // Stop the timer
+    gInterval = null  // Set gInterval to null to ensure it doesn’t restart
+    console.log("Timer stopped successfully.")
+  } else {
+    console.log("No timer is running.")
+  }
+}
