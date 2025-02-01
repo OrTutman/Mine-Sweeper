@@ -43,13 +43,45 @@ td:hover {
 .grid-item {
   font-size: 24px;
   background-color: #f5f5f5;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
+
+
+.grid-item.flagged {
+  background-color: lightyellow;
+}
+
+.grid-item.uncovered {
+  background-color: lightgray;
+ }
 
 .game-table {
   margin: 20px auto;
+  font-family: fantasy;
 }
-/*  */
 
+/* Assigning different colors to each number */
+/* .blue-number {
+  color: blue;
+}
+
+.green-number {
+  color: green;
+}
+
+.red-number {
+  color: red;
+}
+
+.darkblue-number {
+  color: darkblue;
+}
+
+.darkred-number {
+  color: darkred;
+} */
 
 .grid-item:hover {
   background-color: #ddd; 
