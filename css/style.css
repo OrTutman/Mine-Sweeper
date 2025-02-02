@@ -142,3 +142,52 @@ td:hover {
 .game-over-message button:hover {
   background-color: #45a049;
 }
+
+.win-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 255, 0, 0.7);
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 9999; /* Make sure it's on top */
+}
+
+.win-message button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.win-message button:hover {
+  background-color: #45a049;
+}
+
+/* Basic styling for the smiley button */
+.smiley {
+  font-size: 40px;
+  padding: 10px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+}
+
+/* Style when the game is normal (default) */
+.smiley.normal::before {
+  content: '🙂'; /* Normal face */
+}
+
+/* Style when the game is lost */
+.smiley.sad::before {
+  content: '☹️'; /* Sad face */
+}
+
+/* Style when the game is won */
+.smiley.win::before {
+  content: '😁'; /* Happy face */
+}

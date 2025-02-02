@@ -24,30 +24,29 @@ gameOver: false, // Flag to check if game is over
 
 }
 
+
+var firstClick = true
+var mineIndexes = []
+
 // Timer:
 var gInterval
 var gStartTime
 
 
+
 function onInitGame() {
- 
-  if (gGame.isOn) {
-    return  // Don't start the timer if the game is already in progress
-  }
+  if (gGame.isOn) return;  // Don't start if game is already on
 
-  gBoard = createBoard()  // Create the board at the start
-  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
-  placeMines() // Place the mines
-  setMinesNegsCount() // Set the mine counts for all cells
+  gBoard = createBoard();
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
+  placeMines();
+  setMinesNegsCount();
 
-  startTimer() // Start the timer
-  renderBoard() // Render the board after everything is set
-
-
+  resetTimer();  // Start the timer
+  renderBoard();  // Render the board
+  gGame.isOn = true;  // Mark game as on
 }
 
-var firstClick = true
-var mineIndexes = []
 
 // Create the board with empty cells
 function createBoard() {
@@ -113,47 +112,52 @@ function setMinesNegsCount() {
 }
 
 
+
 function handleClick(index, elCell) {
-  if (gGame.gameOver) return // Don't process clicks if the game is over
+  if (gGame.gameOver) return;  // Don't process clicks if the game is over
 
-  const clickedCell = gBoard[index] // Get the clicked cell object
+  const clickedCell = gBoard[index];
 
-  // If this is the first click, initialize the game
+  // Handle the first click
   if (firstClick) {
-    firstClick = false
-    mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
-    gBoard = createBoard()
-    placeMines()// Place mines on the board
-    setMinesNegsCount() // Set the mine counts for all cells
+    firstClick = false;
+    mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
+    gBoard = createBoard();
+    placeMines();
+    setMinesNegsCount();
+
+    startTimer();  // Start the timer when the first cell is clicked
+
   }
 
-  // If it's a mine, display the bomb and decrease lives
+  // If it's a mine, display the bomb, reduce lives and check if game over
   if (clickedCell.isMine) {
-    console.log('Mine hit!')
-    elCell.textContent = '💣'  // Display a bomb if it's a mine
-
-    gGame.lives -= 1 // Decrease the player's lives
-    updateLivesDisplay() // Update the lives display on the page
+    elCell.textContent = '💣';
+    gGame.lives--;
+    updateLivesDisplay();
 
     if (gGame.lives === 0) {
-      gameOver(); // Trigger game over if no lives left
+      gameOver(false);  // Game over: Player lost
     }
   } else {
-    console.log('Safe click')
-    const mineCount = clickedCell.minesAroundCount
-
+    // Safe cell
+    const mineCount = clickedCell.minesAroundCount;
     if (mineCount > 0) {
-      elCell.textContent = mineCount;  // Show the number of surrounding mines
-      setNumberColor(elCell, mineCount)  // Set the color of the number
+      elCell.textContent = mineCount;
+      setNumberColor(elCell, mineCount);
     } else {
-      // If no mines are around, uncover the cell and expand uncovering to neighbors
-      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size)
+      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size);
     }
   }
 
-  // Mark the cell as revealed
-  clickedCell.isCovered = false
+  clickedCell.isCovered = false;  // Mark this cell as uncovered
+
+  // After uncovering a safe cell, check for the win condition
+  checkWinCondition();
 }
+
+
+
 
 // Function to set the color of the number based on the surrounding mines count
 function setNumberColor(elCell, number) {
@@ -293,65 +297,98 @@ function updateLivesDisplay() {
   }
 }
 
-// Game Over function
-function gameOver() {
-
-      gGame.gameOver = true
-      
-      // Log to check if the interval is cleared
-      console.log("Stopping the timer...")
-      if (gInterval) {
-        clearInterval(gInterval)
-        gInterval = null  // Reset the interval
-        console.log("Timer stopped!")
-      }
-
-       // Stop the timer and update the display
-
-      uncoverAllCells() // Uncover all cells
-      showGameOverMessage()  // Show game over message
-      disableCellClicks() // Disable further clicks
-      stopTimer() 
-    
-    
-}
 
 function showGameOverMessage() {
-  console.log("Displaying Game Over Message")  // Debugging line
-
-  const gameOverMessage = document.createElement('div')
-  gameOverMessage.classList.add('game-over-message')
+  const gameOverMessage = document.createElement('div');
+  gameOverMessage.classList.add('game-over-message');
   gameOverMessage.innerHTML = `
     <h2>Game Over!</h2>
     <p>You have lost all your lives.</p>
     <p><strong>Time: ${Math.floor((Date.now() - gStartTime) / 1000)}s</strong></p>
     <button onclick="restartGame()">Restart</button>
-  `
+  `;
 
-  document.body.appendChild(gameOverMessage)  // Append the message
+  document.body.appendChild(gameOverMessage);  // Display game over message
+}
+
+function checkWinCondition() {
+  let uncoveredCells = 0;
+  const totalCells = gLevel.size * gLevel.size;
+  const totalMines = gLevel.mines;
+
+  // Count uncovered safe cells (cells that are not mines)
+  gBoard.forEach(cell => {
+    if (!cell.isCovered && !cell.isMine) {
+      uncoveredCells++;
+    }
+  });
+
+  // If the number of uncovered safe cells equals the total non-mine cells, player wins
+  if (uncoveredCells === totalCells - totalMines) {
+    gameOver(true);  // Player has won
+  }
+}
+
+
+function gameOver(isWin) {
+  if (gGame.gameOver) return; // Prevent running gameOver more than once
+
+  gGame.gameOver = true;
+
+  // Stop the timer
+  if (gInterval) {
+    clearInterval(gInterval);
+    gInterval = null;
+  }
+
+  // Uncover all cells
+  uncoverAllCells();
+
+  // Show win or lose message based on the game result
+  if (isWin) {
+    showWinMessage(); // Player won
+  } else {
+    showGameOverMessage(); // Player lost
+  }
+
+  // Disable further clicks
+  disableCellClicks();
+}
+
+
+
+function showWinMessage() {
+  const winMessage = document.createElement('div');
+  winMessage.classList.add('game-over-message');
+  winMessage.innerHTML = `
+    <h2>You Win!</h2>
+    <p>Congratulations! You found all the safe cells.</p>
+    <p><strong>Time: ${Math.floor((Date.now() - gStartTime) / 1000)}s</strong></p>
+    <button onclick="restartGame()">Restart</button>
+  `;
+
+  document.body.appendChild(winMessage);  // Display win message
 }
 
 
 function restartGame() {
-  // Reset game state and board for a new game
-  gGame = {
-    isOn: false,
-    coveredCount: 0,
-    markedCount: 0,
-    secsPassed: 0,
-  };
-  
-  firstClick = true
-  mineIndexes = []
-  gBoard = createBoard()
-  
-  renderBoard()  // Re-render the board
-  startTimer()  // Restart the timer
-  
-  // Remove the game over message from the screen
-  const gameOverMessage = document.querySelector('.game-over-message')
+  gGame.gameOver = false;
+  gGame.lives = 3;  // Reset lives
+  gGame.secsPassed = 0;  // Reset timer
+
+  // Reset game variables
+  gBoard = createBoard();
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
+  firstClick = true;  // Reset firstClick to true so the timer starts on the first click
+
+  renderBoard();  // Re-render the board
+  resetTimer();  // Reset the timer
+  updateLivesDisplay();  // Update the lives display
+
+  // Remove any existing game over message
+  const gameOverMessage = document.querySelector('.game-over-message');
   if (gameOverMessage) {
-    gameOverMessage.remove()
+    gameOverMessage.remove();
   }
 }
 
@@ -401,42 +438,50 @@ document.addEventListener('DOMContentLoaded', function() {
   renderBoard()
 }) 
 
-// Function to start a new game
+
 function startNewGame() {
   // Reset the game state
-  gGame.lives = 3
-  gGame.gameOver = false
-  gGame.secsPassed = 0
-  updateLivesDisplay() // Update the lives display
-  
+  gGame.lives = 3;
+  gGame.gameOver = false;
+  gGame.secsPassed = 0;
+  updateLivesDisplay(); // Update the lives display
+
   // Reset the board and mines
-  renderBoard()
-  startTimer()
+  gBoard = createBoard();
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
+  firstClick = true;  // Reset firstClick to true so the timer starts on the first click
+
+  renderBoard();  // Re-render the board
+  resetTimer();  // Reset the timer
+  updateLivesDisplay();  // Update the lives display
+
+  // Remove any existing game over message
+  const gameOverMessage = document.querySelector('.game-over-message');
+  if (gameOverMessage) {
+    gameOverMessage.remove();
+  }
 }
+
 
 function resetTimer() {
-    clearInterval(gInterval)
-    var elTimer = document.querySelector('.timer')
-    elTimer.innerHTML = '000'
-    gStartTime = 0
-    gInterval = null
+  clearInterval(gInterval); // Stop the current timer
+  gStartTime = Date.now();  // Reset the start time
+  gInterval = null;  // Reset the interval
+  document.querySelector('.timer').innerHTML = 'Time:0s'; // Reset the display to 0
 }
-
 
 
 function onDifficultyClick(elBtn) {
-    gLevel.size = elBtn.dataset.size
+  gLevel.size = parseInt(elBtn.dataset.size);
+  if (gLevel.size === 4) gLevel.mines = 2;
+  if (gLevel.size === 8) gLevel.mines = 14;
+  if (gLevel.size === 12) gLevel.mines = 32;
 
-  
-    if(gLevel.size === '4') gLevel.mines = 2
-    if(gLevel.size === '8') gLevel.mines = 14
-    if(gLevel.size === '12') gLevel.mines = 32
-    console.log(gLevel.size)
-    console.log(gLevel.mines)
+  console.log(gLevel.size);
+  console.log(gLevel.mines);
 
-    onInitGame()
+  restartGame();  // Restart the game with the new difficulty
 }
-
 
 
 function updateTime() {
@@ -465,13 +510,6 @@ function startTimer() {
 }
 
 function stopTimer() {
-  console.log("Stopping timer...")
-  
-  if (gInterval) {
-    clearInterval(gInterval)  // Stop the timer
-    gInterval = null  // Set gInterval to null to ensure it doesn’t restart
-    console.log("Timer stopped successfully.")
-  } else {
-    console.log("No timer is running.")
-  }
+  clearInterval(gInterval); // Stop the timer
+  gInterval = null;
 }
