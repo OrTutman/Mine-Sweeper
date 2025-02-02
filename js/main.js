@@ -1,7 +1,5 @@
 'use strict'
 
-// TODO: kmvdfvmkldfm
-
 const gLevel = {
     size: 4, 
     mines: 2
@@ -35,16 +33,16 @@ var gStartTime
 
 
 function onInitGame() {
-  if (gGame.isOn) return;  // Don't start if game is already on
+  if (gGame.isOn) return  // Don't start if game is already on
 
-  gBoard = createBoard();
-  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
-  placeMines();
-  setMinesNegsCount();
+  gBoard = createBoard()
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
+  placeMines()
+  setMinesNegsCount()
 
-  resetTimer();  // Start the timer
-  renderBoard();  // Render the board
-  gGame.isOn = true;  // Mark game as on
+  resetTimer()  // Start the timer
+  renderBoard()  // Render the board
+  gGame.isOn = true // Mark game as on
 }
 
 
@@ -111,53 +109,64 @@ function setMinesNegsCount() {
   }
 }
 
-
+function updateSmileyFace(state = 'normal') {
+  const smileyBtn = document.querySelector('.smiley')
+  
+  if (state === 'sad') {
+    smileyBtn.textContent = '😞'// Sad face when the player loses
+  } else if (state === 'happy') {
+    smileyBtn.textContent = '😊'// Happy face when the player wins
+  } else {
+    smileyBtn.textContent = '🙂'// Normal face during the game
+  }
+}
 
 function handleClick(index, elCell) {
-  if (gGame.gameOver) return;  // Don't process clicks if the game is over
+  if (gGame.gameOver) return  // Don't process clicks if the game is over
 
-  const clickedCell = gBoard[index];
+  const clickedCell = gBoard[index]
 
   // Handle the first click
   if (firstClick) {
-    firstClick = false;
-    mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
-    gBoard = createBoard();
-    placeMines();
-    setMinesNegsCount();
+    firstClick = false
+    mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
+    gBoard = createBoard()
+    placeMines()
+    setMinesNegsCount()
 
-    startTimer();  // Start the timer when the first cell is clicked
-
+    startTimer()  // Start the timer when the first cell is clicked
+    updateSmileyFace('normal') // Make sure smiley is normal on first click
   }
 
   // If it's a mine, display the bomb, reduce lives and check if game over
   if (clickedCell.isMine) {
-    elCell.textContent = '💣';
-    gGame.lives--;
-    updateLivesDisplay();
+    elCell.textContent = '💣'
+    gGame.lives--
+    updateLivesDisplay()
+    updateSmileyFace('sad') // Update the smiley face to sad when a mine is clicked
 
     if (gGame.lives === 0) {
-      gameOver(false);  // Game over: Player lost
+      gameOver(false)  // Game over: Player lost
     }
   } else {
     // Safe cell
-    const mineCount = clickedCell.minesAroundCount;
+    const mineCount = clickedCell.minesAroundCount
     if (mineCount > 0) {
-      elCell.textContent = mineCount;
-      setNumberColor(elCell, mineCount);
+      elCell.textContent = mineCount
+      setNumberColor(elCell, mineCount)
     } else {
-      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size);
+      expandUncover(gBoard, elCell, Math.floor(index / gLevel.size), index % gLevel.size)
     }
+
+    // Update smiley to normal after clicking a regular cell (not a mine)
+    updateSmileyFace('normal')
   }
 
-  clickedCell.isCovered = false;  // Mark this cell as uncovered
+  clickedCell.isCovered = false  // Mark this cell as uncovered
 
   // After uncovering a safe cell, check for the win condition
-  checkWinCondition();
+  checkWinCondition()
 }
-
-
-
 
 // Function to set the color of the number based on the surrounding mines count
 function setNumberColor(elCell, number) {
@@ -215,7 +224,7 @@ function expandUncover(board, elCell, i, j) {
       uncoverNeighbors(board, i, j)
     }else {
       // Set the number color for non-empty cells
-      setNumberColor(elCell, clickedCell.minesAroundCount);
+      setNumberColor(elCell, clickedCell.minesAroundCount)
     }
   }
 }
@@ -264,7 +273,7 @@ function renderBoard() {
       elCell.addEventListener('contextmenu', (event) => {
         event.preventDefault() // Prevent the default right-click menu
         onCellMarked(elCell, index) // Mark or unmark the cell
-      });
+      })
 
       // Append the cell to the row
       tr.appendChild(elCell)
@@ -299,96 +308,102 @@ function updateLivesDisplay() {
 
 
 function showGameOverMessage() {
-  const gameOverMessage = document.createElement('div');
-  gameOverMessage.classList.add('game-over-message');
+  const gameOverMessage = document.createElement('div')
+  gameOverMessage.classList.add('game-over-message')
   gameOverMessage.innerHTML = `
     <h2>Game Over!</h2>
     <p>You have lost all your lives.</p>
     <p><strong>Time: ${Math.floor((Date.now() - gStartTime) / 1000)}s</strong></p>
     <button onclick="restartGame()">Restart</button>
-  `;
+  `
 
-  document.body.appendChild(gameOverMessage);  // Display game over message
+  document.body.appendChild(gameOverMessage)  // Display game over message
 }
 
+
 function checkWinCondition() {
-  let uncoveredCells = 0;
-  const totalCells = gLevel.size * gLevel.size;
-  const totalMines = gLevel.mines;
+  let uncoveredCells = 0
+  const totalCells = gLevel.size * gLevel.size
+  const totalMines = gLevel.mines
 
   // Count uncovered safe cells (cells that are not mines)
   gBoard.forEach(cell => {
     if (!cell.isCovered && !cell.isMine) {
-      uncoveredCells++;
+      uncoveredCells++
     }
-  });
+  })
 
   // If the number of uncovered safe cells equals the total non-mine cells, player wins
   if (uncoveredCells === totalCells - totalMines) {
-    gameOver(true);  // Player has won
+    gameOver(true)  // Player has won
   }
 }
 
 
 function gameOver(isWin) {
-  if (gGame.gameOver) return; // Prevent running gameOver more than once
+  if (gGame.gameOver) return // Prevent running gameOver more than once
 
-  gGame.gameOver = true;
+  gGame.gameOver = true
 
   // Stop the timer
   if (gInterval) {
-    clearInterval(gInterval);
-    gInterval = null;
+    clearInterval(gInterval)
+    gInterval = null
   }
 
   // Uncover all cells
-  uncoverAllCells();
+  uncoverAllCells()
 
   // Show win or lose message based on the game result
   if (isWin) {
-    showWinMessage(); // Player won
+    showWinMessage()  // Player won
+    updateSmileyFace('happy')  // Set smiley face to happy
   } else {
-    showGameOverMessage(); // Player lost
+    showGameOverMessage() // Player lost
+    updateSmileyFace('sad') // Set smiley face to sad
   }
 
-  // Disable further clicks
-  disableCellClicks();
+  // Disable further clicks to prevent any further interaction after game ends
+  disableCellClicks()
 }
 
 
 
+
 function showWinMessage() {
-  const winMessage = document.createElement('div');
-  winMessage.classList.add('game-over-message');
+  const winMessage = document.createElement('div')
+  winMessage.classList.add('game-over-message')
   winMessage.innerHTML = `
     <h2>You Win!</h2>
     <p>Congratulations! You found all the safe cells.</p>
     <p><strong>Time: ${Math.floor((Date.now() - gStartTime) / 1000)}s</strong></p>
     <button onclick="restartGame()">Restart</button>
-  `;
+  `
 
-  document.body.appendChild(winMessage);  // Display win message
+  document.body.appendChild(winMessage)  // Display win message
 }
 
 
 function restartGame() {
-  gGame.gameOver = false;
-  gGame.lives = 3;  // Reset lives
-  gGame.secsPassed = 0;  // Reset timer
+  gGame.gameOver = false
+  gGame.lives = 3  // Reset lives
+  gGame.secsPassed = 0  // Reset timer
 
   // Reset game variables
-  gBoard = createBoard();
-  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
-  firstClick = true;  // Reset firstClick to true so the timer starts on the first click
+  gBoard = createBoard()
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
+  firstClick = true // Reset firstClick to true so the timer starts on the first click
 
-  renderBoard();  // Re-render the board
-  resetTimer();  // Reset the timer
-  updateLivesDisplay();  // Update the lives display
+  renderBoard() // Re-render the board
+  resetTimer()  // Reset the timer
+  updateLivesDisplay()  // Update the lives display
+  updateSmileyFace('normal')  // Reset the smiley face to normal
+
 
   // Remove any existing game over message
-  const gameOverMessage = document.querySelector('.game-over-message');
+  const gameOverMessage = document.querySelector('.game-over-message')
   if (gameOverMessage) {
-    gameOverMessage.remove();
+    gameOverMessage.remove()
   }
 }
 
@@ -441,46 +456,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function startNewGame() {
   // Reset the game state
-  gGame.lives = 3;
-  gGame.gameOver = false;
-  gGame.secsPassed = 0;
-  updateLivesDisplay(); // Update the lives display
+  gGame.lives = 3
+  gGame.gameOver = false
+  gGame.secsPassed = 0
+  updateLivesDisplay() // Update the lives display
 
   // Reset the board and mines
-  gBoard = createBoard();
-  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size);
-  firstClick = true;  // Reset firstClick to true so the timer starts on the first click
+  gBoard = createBoard()
+  mineIndexes = getRandomIndexes(gLevel.mines, gLevel.size * gLevel.size)
+  firstClick = true  // Reset firstClick to true so the timer starts on the first click
 
-  renderBoard();  // Re-render the board
-  resetTimer();  // Reset the timer
-  updateLivesDisplay();  // Update the lives display
+  renderBoard() // Re-render the board
+  resetTimer() // Reset the timer
+  updateLivesDisplay()  // Update the lives display
 
   // Remove any existing game over message
-  const gameOverMessage = document.querySelector('.game-over-message');
+  const gameOverMessage = document.querySelector('.game-over-message')
   if (gameOverMessage) {
-    gameOverMessage.remove();
+    gameOverMessage.remove()
   }
 }
 
 
 function resetTimer() {
-  clearInterval(gInterval); // Stop the current timer
-  gStartTime = Date.now();  // Reset the start time
-  gInterval = null;  // Reset the interval
-  document.querySelector('.timer').innerHTML = 'Time:0s'; // Reset the display to 0
+  clearInterval(gInterval)// Stop the current timer
+  gStartTime = Date.now() // Reset the start time
+  gInterval = null // Reset the interval
+  document.querySelector('.timer').innerHTML = 'Time:0s' // Reset the display to 0
 }
 
 
 function onDifficultyClick(elBtn) {
-  gLevel.size = parseInt(elBtn.dataset.size);
-  if (gLevel.size === 4) gLevel.mines = 2;
-  if (gLevel.size === 8) gLevel.mines = 14;
-  if (gLevel.size === 12) gLevel.mines = 32;
+  gLevel.size = parseInt(elBtn.dataset.size)
+  if (gLevel.size === 4) gLevel.mines = 2
+  if (gLevel.size === 8) gLevel.mines = 14
+  if (gLevel.size === 12) gLevel.mines = 32
 
-  console.log(gLevel.size);
-  console.log(gLevel.mines);
+  console.log(gLevel.size)
+  console.log(gLevel.mines)
 
-  restartGame();  // Restart the game with the new difficulty
+  restartGame()  // Restart the game with the new difficulty
 }
 
 
@@ -509,7 +524,8 @@ function startTimer() {
   console.log("Timer started")
 }
 
+
 function stopTimer() {
-  clearInterval(gInterval); // Stop the timer
-  gInterval = null;
+  clearInterval(gInterval) // Stop the timer
+  gInterval = null
 }
