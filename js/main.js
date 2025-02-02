@@ -172,7 +172,7 @@ function onCellClicked(index, elCell) {
     elCell.textContent = '💣'
     gGame.lives--
     updateLivesDisplay()
-    updateSmileyFace('sad') // Update the smiley face to sad when a mine is clicked
+    updateSmileyFace('scared') // Update the smiley face to sad when a mine is clicked
 
     if (gGame.lives === 0) {
       gameOver(false)  // Game over: Player lost

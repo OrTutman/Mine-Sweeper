@@ -1,13 +1,14 @@
-'use strict'
-
+'use strict' 
 
 function updateSmileyFace(state = 'normal') {
     const smileyBtn = document.querySelector('.smiley')
     
-    if (state === 'sad') {
-      smileyBtn.textContent = '😞'// Sad face when the player loses
+    if (state === 'scared') {
+      smileyBtn.textContent = '🫣'// Scared face when the player click on mine
     } else if (state === 'happy') {
-      smileyBtn.textContent = '😊'// Happy face when the player wins
+      smileyBtn.textContent = '😎'// Happy face when the player wins
+    } else if (state === 'Dead') {
+        smileyBtn.textContent = '🤯'// Dead face when the player LOSE   
     } else {
       smileyBtn.textContent = '🙂'// Normal face during the game
     }
@@ -99,9 +100,11 @@ function setNumberColor(elCell, number) {
     if (isWin) {
       showWinMessage() 
       updateSmileyFace('happy')  
+      playWinAudio()
     } else {
       showGameOverMessage() 
-      updateSmileyFace('sad') 
+      updateSmileyFace('Dead') 
+      playLoseAudio()
   
     // Disable further clicks to prevent any further interaction after game ends
     disableCellClicks()
@@ -201,7 +204,7 @@ function expandUncover(board, elCell, i, j) {
     clearInterval(gInterval) // Stop the timer
     gInterval = null
   }
-  
+
   // Get random unique indexes for mines
   function getRandomIndexes(count, max) {
     const indexes = new Set()
@@ -213,3 +216,12 @@ function expandUncover(board, elCell, i, j) {
     return [...indexes]
   }
   
+  function playWinAudio() {
+    const audioWin = new Audio(`audio/win.mp3`)
+    audioWin.play()
+}
+
+function playLoseAudio() {
+    const audioWin = new Audio(`audio/lose.mp3`)
+    audioWin.play()
+}
