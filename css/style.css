@@ -143,7 +143,7 @@ td:hover {
   background-color: #45a049;
 }
 
-.win-message {
+/* .win-message {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -154,8 +154,8 @@ td:hover {
   border-radius: 10px;
   text-align: center;
   z-index: 9999; /* Make sure it's on top */
-}
-
+/* } */
+/* 
 .win-message button {
   padding: 10px 20px;
   background-color: #4CAF50;
@@ -168,8 +168,8 @@ td:hover {
   background-color: #45a049;
 }
 
-/* Basic styling for the smiley button */
-.smiley {
+Basic styling for the smiley button */
+ .smiley {
   font-size: 40px;
   padding: 10px;
   border: none;
@@ -178,16 +178,16 @@ td:hover {
 }
 
 /* Style when the game is normal (default) */
-.smiley.normal::before {
+/* .smiley.normal::before {
   content: '🙂'; /* Normal face */
-}
-
+/* }
+ */
 /* Style when the game is lost */
-.smiley.sad::before {
+/* .smiley.sad::before {
   content: '☹️'; /* Sad face */
-}
+/* } */ 
 
 /* Style when the game is won */
-.smiley.win::before {
+/* .smiley.win::before {
   content: '😁'; /* Happy face */
-}
+/* } */
